@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>ㅅ ㅏ~~~~~~~~~원정보~~~~~~~~~~</title>
+</head>
+
+<body>
+	<form action="RegisterServlet" id="frm" method="get">
+		<h1>반갑습니다.</h1>
+		아이디 :
+		<input type="text" id="eid" name="eid">
+		<br> 성 :
+		<input type="text" id="fname" name="fname">
+		<br> 이메일 :
+		<input type="text" id="email" name="email">
+		<br> 입사일자 :
+		<input type="date" id="hiredate" name="hiredate">
+		<br> 이름 :
+		<input type="text" id="lname" name="lname">
+		<br>
+		<p />
+		<button type="button" onclick="frm_submit()">저장</button>
+		<button type="button" onclick="frm_update()">수정</button>
+		<button type="button" onclick="frm_delete()">삭제</button>
+		<p />
+	</form>
+	<div id="show"></div>
+	<script>
+		let data;
+		let xhtp = new XMLHttpRequest();
+		xhtp.open("Get", "EmpListServlet");
+		xhtp.send();
+		xhtp.onreadystatechange = function () {
+			if (xhtp.readyState == 4 && xhtp.status == 200) {
+				data = JSON.parse(xhtp.responseText);
+				console.log(data);
+				showList(data);
+			}
+		}
+
+
+		function showList(data) {
+			let tblTag = document.createElement('table');
+			tblTag.setAttribute('border', '1');
+
+			let header = document.createElement('caption');
+			let text = document.createTextNode('사원정보');
+			header.appendChild(text);
+			tblTag.appendChild(header);
+
+			let trTag = document.createElement('tr');
+			for (let field in data[0]) {
+				let thTag = document.createElement('th');
+				let text = document.createTextNode(field);
+				thTag.appendChild(text);
+				trTag.appendChild(thTag);
+			}
+			tblTag.appendChild(trTag);
+
+			for (let row of data) {
+				let trTag = document.createElement('tr');
+				trTag.setAttribute('id', row.employeeId);
+				trTag.onclick = trClick;
+				for (let field in row) {
+					let tdTag = document.createElement('td');
+					let text = document.createTextNode(row[field]);
+					tdTag.appendChild(text);
+					trTag.appendChild(tdTag);
+				}
+				tblTag.appendChild(trTag);
+			}
+
+			document.getElementById('show').appendChild(tblTag);
+		}
+
+		function frm_submit() {
+			//frm
+			if (frm.eid.value == "") {
+				alert("id를 입력하세요.");
+				frm.eid.focus();
+				return;
+			}
+
+			if (frm.fname.value == "") {
+				alert("first_name을 입력하세요.");
+				frm.fname.focus();
+				return;
+			}
+
+			if (frm.lname.value == "") {
+				alert("last_name을 입력하세요.");
+				frm.lname.focus();
+				return;
+			}
+
+			if (frm.email.value == "") {
+				alert("email을 입력하세요.");
+				frm.email.focus();
+				return;
+			}
+
+			if (frm.hiredate.value == "") {
+				alert("hire_date를 입력하세요.");
+				frm.hiredate.focus();
+				return;
+			}
+			// frm.submit();
+
+			let xhtp = new XMLHttpRequest();
+			const id = document.querySelectorAll('input[name="eid"]')[0].value;
+			const fn = document.querySelectorAll('input[name="fname"]')[0].value;
+			const ln = document.querySelectorAll('input[name="lname"]')[0].value;
+			const em = document.querySelectorAll('input[name="email"]')[0].value;
+			const hd = document.querySelectorAll('input[name="hiredate"]')[0].value;
+			const param = 'eid=' + id + '&fname=' + fn + '&email=' + em + '&hiredate=' + hd + '&lname=' + ln;
+			console.log('dddddd');
+			xhtp.open('get', 'RegisterServlet?' + param);
+			xhtp.send();
+			xhtp.onreadystatechange = function () {
+				if (xhtp.readyState == 4 && xhtp.status == 200) {
+					alert('ok');
+					// {id:?, first_name:?, last_name:?, email:?, hire_date:?} ---> 객체 형태
+					console.log(xhtp.responseText);
+					const data = JSON.parse(xhtp.responseText);
+
+
+					let trTag = document.createElement('tr');
+					for (let field in data) {
+						let tdTag = document.createElement('td');
+						let text = document.createTextNode(data[field]);
+						tdTag.appendChild(text);
+						trTag.appendChild(tdTag);
+					}
+					document.getElementsByTagName('table')[0].appendChild(trTag);
+
+				}
+			}
+		}
+
+		function frm_update() {
+			let xhtp = new XMLHttpRequest();
+			const id = document.querySelectorAll('input[name="eid"]')[0].value;
+			const fn = document.querySelectorAll('input[name="fname"]')[0].value;
+			const ln = document.querySelectorAll('input[name="lname"]')[0].value;
+			const em = document.querySelectorAll('input[name="email"]')[0].value;
+			const hd = document.querySelectorAll('input[name="hiredate"]')[0].value;
+			const param = 'eid=' + id + '&fname=' + fn + '&email=' + em + '&hiredate=' + hd + '&lname=' + ln;
+			console.log('dddddd');
+			xhtp.open('get', 'ModifyServlet?' + param);
+			xhtp.send();
+			xhtp.onreadystatechange = function () {
+				if (xhtp.readyState == 4 && xhtp.status == 200) {
+					alert('ok');
+					// {id:?, first_name:?, last_name:?, email:?, hire_date:?} ---> 객체 형태
+					console.log(xhtp.responseText);
+					const data = JSON.parse(xhtp.responseText);
+
+					const findTr = document.getElementById(data.employeeId);
+					findTr.childNodes[1].childNodes[0].nodeValue = data.firstName;
+					findTr.childNodes[2].childNodes[0].nodeValue = data.lastName;
+					findTr.childNodes[3].childNodes[0].nodeValue = data.email;
+					findTr.childNodes[4].childNodes[0].nodeValue = data.hireDate;
+
+
+				}
+			}
+		}
+		//document.getElementById('btnDel').addEventListener('click', frm_delete);
+		function frm_delete() {
+
+			let xhtp = new XMLHttpRequest();
+			let eid = document.querySelector('input[name=eid]').value;
+
+			xhtp.open('get', 'DeleteServlet?eid=' + eid);
+			xhtp.send();
+			xhtp.onreadystatechange = function () {
+				if (xhtp.readyState == 4 && xhtp.status == 200) {
+					// {id:?, first_name:?, last_name:?, email:?, hire_date:?} ---> 객체 형태
+					console.log(xhtp.responseText);
+					const data = JSON.parse(xhtp.responseText);
+
+					document.getElementById(eid).remove();
+
+				}
+			}
+		}
+
+		function trClick() {
+			console.log(this.getAttribute('id'));
+			const eid = this.getAttribute('id');
+
+			const xhtp = new XMLHttpRequest();
+
+			xhtp.open('get', 'EmployeeServlet?eid=' + eid);
+			xhtp.send();
+			xhtp.onreadystatechange = function () {
+				if (xhtp.readyState == 4 && xhtp.status == 200) {
+					// {id:?, first_name:?, last_name:?, email:?, hire_date:?} ---> 객체 형태
+					console.log(xhtp.responseText);
+					const data = JSON.parse(xhtp.responseText);
+					document.querySelector('input[name="eid"]').value = data.employeeId;
+					document.querySelector('input[name="lname"]').value = data.lastName;
+					document.querySelector('input[name="email"]').value = data.email;
+					document.querySelector('input[name="hiredate"]').value = data.hireDate;
+					document.querySelector('input[name="fname"]').value = data.firstName;
+				}
+			}
+
+		}
+	</script>
+</body>
+
+</html>
