@@ -29,7 +29,8 @@
 	<div id="show"></div>
 	<script>
 		let data;
-		let xhtp = new XMLHttpRequest();
+		// new XMLHttpRequest() :: 서버와 통신하는 오브젝트 생성, xhtp 변수에 담음.
+		let xhtp = new XMLHttpRequest(); 
 		xhtp.open("Get", "EmpListServlet");
 		xhtp.send();
 		xhtp.onreadystatechange = function () {

@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+//JDBC 연결
 public class DAO {
 	protected Connection conn;
 	protected Statement stmt;

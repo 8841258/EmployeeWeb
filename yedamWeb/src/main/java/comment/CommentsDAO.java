@@ -5,8 +5,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+//싱글톤!!!!!!!!! 메모리 절약!!!!!!!!!!! 최초로 한번만 메모리 할당
 public class CommentsDAO extends DAO {
+	
    private static CommentsDAO instance;
+   
+   //생성자를 private로 하면 new연산자로 생성하지 못한다.
+   private CommentsDAO() {}
+   
+   //생성은 못하지만 getInstance()를 통해 객체 반환 가능
    public static CommentsDAO getInstance() {
       if (instance != null) {
          return instance;
@@ -30,7 +37,7 @@ public class CommentsDAO extends DAO {
          stmt = conn.createStatement();
          rs = stmt.executeQuery("select value from id_repository where name = 'comment'");
          if (rs.next()) {
-            currentId = rs.getInt(1);
+            currentId = rs.getInt(1); //숫자가 아니라 value 열
          }
          currentId++; // 새로운 시퀀스 번호
          psmt = conn.prepareStatement("update id_repository set value=? where name='comment'");
