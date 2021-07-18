@@ -56,33 +56,29 @@
 					console.log(commentList);
 
 					for (let i = 0; i < commentList.length; i++) {
+						//맨 위에 목록 보여주는 곳❤❤❤❤❤❤❤❤❤❤❤❤❤❤❤❤❤❤❤❤
 						let div = makeCommentView(commentList[i]);
 						listDiv.appendChild(div);
 					}
 				}
-
-				console.log(code);
-
 			}
 		}
-
+		
 		//comment는 object이다.
 		function makeCommentView(comment) {
 			let div = document.createElement('div');
 			//div 영역에 id속성을 comment 데이터의 id값으로 준다.
 			// div.setAttribute('id', comment.id);
 			div.id = comment.id;  
-			//--> 이건 안되나?
 			div.className = 'comment';
 			div.comment = comment; //{id:1, name:'user', content:'test'}
-			let str = '<strong>' + comment.name + '</strong>' + comment.content +
-				'<input type="button" value="수정" onclick="viewUpdateForm('+comment.id+')">' +
+			let str = '<strong>' + comment.name + ' </strong>' + comment.content +
+				'<input type="button" value="수정" onclick="viewUpdateForm('+comment.id+');">' +
 				'<input type="button" value="삭제" onclick="confirmDeletion('+comment.id+')">';
 			div.innerHTML = str;
 
 			return div;
 		}
-
 
 		function addComment() {
 			let name = addForm.name.value;
@@ -128,21 +124,83 @@
 
 			}
 		}
-		
+
 		function viewUpdateForm(commentId) {
 			let commentDiv = document.getElementById(commentId);
 			let updateFormDiv = document.getElementById('commentUpdate');
 
 			commentDiv.appendChild(updateFormDiv);
+
 			let comment = commentDiv.comment; //id, name, content 정보를 부름.
 			updateForm.id.value = comment.id;
 			updateForm.name.value = comment.name;
 			updateForm.content.value = comment.content;
 			updateFormDiv.style.display = 'block';
+
+			//왜 let을 선언하지 않아도 되는거지???
+			selectId = commentId;
+			
+
+			return comment.id;
 		}
-		
+
 		function updateComment() {
 			
+			// let id = this.id;
+			let id = this.selectId;
+			console.log(this);
+
+			let name = updateForm.name.value;
+
+			if (name == "") {
+				alert("이름을 입력하세요.");
+				updateForm.name.focus();
+				return;
+			}
+
+			let content = updateForm.content.value;
+			
+			if (content == "") {
+				alert("내용을 입력하세요.");
+				updateForm.content.focus();
+				return;
+			}
+
+			let xhttp = new XMLHttpRequest();
+
+			let param = "&id=" + id + "&name=" + name + "&content=" + content;
+			
+			xhttp.open("get", "../CommentsServlet?cmd=update" + param);
+			xhttp.send();
+
+			xhttp.onreadystatechange = updateResult;
+
+		}
+
+		function updateResult() {
+			if (this.readyState == 4 && this.status == 200) {
+				let xmp = new DOMParser();
+				let xmlDoc = xmp.parseFromString(this.responseText, 'text/xml');
+				console.log(xmlDoc);
+				let code = xmlDoc.getElementsByTagName('code')[0].innerHTML;
+				//let listDiv = document.getElementById('commentList');
+				if (code == "success") {
+					// let comment = eval(xmlDoc.getElementsByTagName('data').item(0).innerHTML);
+					let comment = JSON.parse(xmlDoc.getElementsByTagName('data').item(0).innerHTML);
+					//listDiv.getElementById("1");
+					updateForm.name.value = '';
+					updateForm.content.value = '';
+					alert("수정되었습니다. [" + comment.id + "]");
+
+					//새로고침 안하고 수정되게 하기
+					// let test = document.querySelectorAll("#commentList .comment");
+					// console.log(test);
+
+				} else if (code == "error") {
+					alert("에러가 발생했습니다.");
+				}
+
+			}
 		}
 
 	</script>
