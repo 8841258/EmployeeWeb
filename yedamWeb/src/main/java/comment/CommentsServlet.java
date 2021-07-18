@@ -70,6 +70,9 @@ public class CommentsServlet extends HttpServlet {
 			comment.setName(request.getParameter("name"));
 			HashMap<String, Object> map = CommentsDAO.getInstance().update(comment);
 			out.println(toXML(map));
+		} else if (cmd.equals("delete")) {
+			String id = request.getParameter("id");
+			CommentsDAO.getInstance().delete(id);
 		}
 	}
 

@@ -22,6 +22,22 @@ public class CommentsDAO extends DAO {
 		return new CommentsDAO();
 	}
 
+	//삭제
+	public void delete(String id) {
+		connect();
+		try {
+			conn.setAutoCommit(false);
+			psmt = conn.prepareStatement("delete from comments where id=?");
+			psmt.setString(1, id);
+			psmt.executeUpdate();
+			
+			conn.commit();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	// 수정
 	public HashMap<String, Object> update(Comments comment) {
 		connect();
@@ -31,7 +47,7 @@ public class CommentsDAO extends DAO {
 			psmt = conn.prepareStatement("update comments set name=?, content=? where id=?");
 			psmt.setString(1, comment.getName()); //수정된이름
 			psmt.setString(2, comment.getContent()); //수정된내용
-			psmt.setString(3, comment.getId()); //1
+			psmt.setString(3, comment.getId()); //id
 			
 			psmt.executeUpdate();
 			
@@ -40,7 +56,7 @@ public class CommentsDAO extends DAO {
 			map.put("id", comment.getId());
 			map.put("name", comment.getName());
 			map.put("content", comment.getContent());
-			map.put("code", "success"); //이건 대체 왜 보내는건지 모르겠음
+			map.put("code", "success"); 
 			
 		} catch (SQLException e) {
 			e.printStackTrace();

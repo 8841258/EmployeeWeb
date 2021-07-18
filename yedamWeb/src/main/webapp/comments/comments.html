@@ -63,18 +63,18 @@
 				}
 			}
 		}
-		
+
 		//comment는 object이다.
 		function makeCommentView(comment) {
 			let div = document.createElement('div');
 			//div 영역에 id속성을 comment 데이터의 id값으로 준다.
 			// div.setAttribute('id', comment.id);
-			div.id = comment.id;  
+			div.id = comment.id;
 			div.className = 'comment';
 			div.comment = comment; //{id:1, name:'user', content:'test'}
-			let str = '<strong>' + comment.name + ' </strong>' + comment.content +
-				'<input type="button" value="수정" onclick="viewUpdateForm('+comment.id+');">' +
-				'<input type="button" value="삭제" onclick="confirmDeletion('+comment.id+')">';
+			let str = '<strong>' + comment.name + ' </strong>' + '<span>' + comment.content + '</span>' +
+				'<input type="button" value="수정" onclick="viewUpdateForm(' + comment.id + ');">' +
+				'<input type="button" value="삭제" onclick="confirmDeletion(' + comment.id + ')">';
 			div.innerHTML = str;
 
 			return div;
@@ -97,13 +97,13 @@
 			let xhttp = new XMLHttpRequest();
 
 			let param = "&name=" + name + "&content=" + content;
-			
+
 			xhttp.open("get", "../CommentsServlet?cmd=insert" + param);
 			xhttp.send();
 
 			xhttp.onreadystatechange = addResult;
 		}
-		
+
 		function addResult() {
 			if (this.readyState == 4 && this.status == 200) {
 				let xmp = new DOMParser();
@@ -139,13 +139,13 @@
 
 			//왜 let을 선언하지 않아도 되는거지???
 			selectId = commentId;
-			
+
 
 			return comment.id;
 		}
 
 		function updateComment() {
-			
+
 			// let id = this.id;
 			let id = this.selectId;
 			console.log(this);
@@ -159,7 +159,7 @@
 			}
 
 			let content = updateForm.content.value;
-			
+
 			if (content == "") {
 				alert("내용을 입력하세요.");
 				updateForm.content.focus();
@@ -169,7 +169,7 @@
 			let xhttp = new XMLHttpRequest();
 
 			let param = "&id=" + id + "&name=" + name + "&content=" + content;
-			
+
 			xhttp.open("get", "../CommentsServlet?cmd=update" + param);
 			xhttp.send();
 
@@ -181,7 +181,7 @@
 			if (this.readyState == 4 && this.status == 200) {
 				let xmp = new DOMParser();
 				let xmlDoc = xmp.parseFromString(this.responseText, 'text/xml');
-				console.log(xmlDoc);
+				// console.log(xmlDoc);
 				let code = xmlDoc.getElementsByTagName('code')[0].innerHTML;
 				//let listDiv = document.getElementById('commentList');
 				if (code == "success") {
@@ -192,15 +192,43 @@
 					updateForm.content.value = '';
 					alert("수정되었습니다. [" + comment.id + "]");
 
-					//새로고침 안하고 수정되게 하기
-					// let test = document.querySelectorAll("#commentList .comment");
-					// console.log(test);
+					//새로고침 안하고 수정되게 하기.......................................
+					let name = document.querySelector("div > div > strong").innerText;
+					let content = document.querySelector("div > div > span").innerText;
+					console.log(comment.name);
+					console.log(comment.content);
+					name = comment.name;
+					content = comment.content;
 
 				} else if (code == "error") {
 					alert("에러가 발생했습니다.");
 				}
 
 			}
+		}
+
+		function confirmDeletion(commentId) {
+			let commentDiv = document.getElementById(commentId);
+
+			//이름 가져오기 연습
+			// let test = document.querySelector("div > div > strong").innerText;
+
+			let xhttp = new XMLHttpRequest();
+
+			let param = "&id=" + commentId;
+
+			xhttp.open("get", "../CommentsServlet?cmd=delete" + param);
+			xhttp.send();
+
+			commentDiv.remove();
+			alert("삭제되었습니다.");
+	
+		}
+
+
+		function cancelUpdate() {
+			let updateFormDiv = document.getElementById('commentUpdate');
+			updateFormDiv.style.display = 'none';
 		}
 
 	</script>
@@ -217,12 +245,12 @@
 	</form>
 	<!-- 글 수정 -->
 	<div id="commentUpdate" style="display: none">
-	<form action="" name="updateForm">
-		이름 : <input type="text" name="name" size="10"><br>
-		내용 : <textarea name="content" cols="20" rows="2"></textarea>
-		<input type="button" value="변경" onclick="updateComment()">
-		<input type="button" value="취소" onclick="cancelUpdate()">
-	</form>
+		<form action="" name="updateForm">
+			이름 : <input type="text" name="name" size="10"><br>
+			내용 : <textarea name="content" cols="20" rows="2"></textarea>
+			<input type="button" value="변경" onclick="updateComment()">
+			<input type="button" value="취소" onclick="cancelUpdate()">
+		</form>
 	</div>
 </body>
 
