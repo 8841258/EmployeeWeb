@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(() => {
+            $('#show').html('Hello World');
+
+            const ulTag = $('<ul />').attr('id', 'fruit').append(
+                $('<li />').text('Apple'),
+                $('<li />').text('Peach'),
+                $('<li />').text('Cherry')
+            );
+            //$(ulTag).css('background-color', 'violet').css('color','white');
+            $(ulTag).css({
+                'background-color': 'lightpink',
+                'color': 'white'
+            });
+            $('#show').append(ulTag);
+            $('#delBtn').on('click', delFunc);
+            console.log($('#show').html());
+        });
+        // 삭제 버튼 클릭 시 콜백함수
+        function delFunc() {
+            $('#show > ul > li').last().remove();
+        }
+    </script>
+
+</head>
+
+<body>
+    <button id="delBtn">삭제</button>
+    <div id="show">
+        <!-- <ul>
+            <li>Apple</li>
+            <li>Banana</li>
+            <li>Cherry</li>
+        </ul> -->
+    </div>
+</body>
+
+</html>

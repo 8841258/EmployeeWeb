@@ -5,6 +5,8 @@
 	<meta charset="UTF-8">
 	<title>comment.html</title>
 	<script>
+		
+
 		window.onload = loadCommentList();
 
 
@@ -129,8 +131,7 @@
 			let commentDiv = document.getElementById(commentId);
 			let updateFormDiv = document.getElementById('commentUpdate');
 
-			commentDiv.appendChild(updateFormDiv);
-
+			commentDiv.after(updateFormDiv);
 			let comment = commentDiv.comment; //id, name, content 정보를 부름.
 			updateForm.id.value = comment.id;
 			updateForm.name.value = comment.name;
@@ -138,68 +139,68 @@
 			updateFormDiv.style.display = 'block';
 
 			//왜 let을 선언하지 않아도 되는거지???
-			selectId = commentId;
+			// selectId = commentId;
 
 
-			return comment.id;
+			// return comment.id;
 		}
 
 		function updateComment() {
 
-			// let id = this.id;
-			let id = this.selectId;
-			console.log(this);
+			const id = document.updateForm.id.value;
+			console.log(id);
+			const name = document.updateForm.name.value;
+			const content = document.updateForm.content.value;
 
-			let name = updateForm.name.value;
 
-			if (name == "") {
-				alert("이름을 입력하세요.");
-				updateForm.name.focus();
-				return;
-			}
+			// // let id = this.id;
+			// let id = this.selectId;
+			// console.log(this);
 
-			let content = updateForm.content.value;
+			// let name = updateForm.name.value;
 
-			if (content == "") {
-				alert("내용을 입력하세요.");
-				updateForm.content.focus();
-				return;
-			}
+			// if (name == "") {
+			// 	alert("이름을 입력하세요.");
+			// 	updateForm.name.focus();
+			// 	return;
+			// }
+
+			// let content = updateForm.content.value;
+
+			// if (content == "") {
+			// 	alert("내용을 입력하세요.");
+			// 	updateForm.content.focus();
+			// 	return;
+			// }
 
 			let xhttp = new XMLHttpRequest();
 
-			let param = "&id=" + id + "&name=" + name + "&content=" + content;
+			let param = "?cmd=update&id=" + id + "&name=" + name + "&content=" + content;
 
-			xhttp.open("get", "../CommentsServlet?cmd=update" + param);
+			xhttp.open("get", "../CommentsServlet" + param);
 			xhttp.send();
 
 			xhttp.onreadystatechange = updateResult;
 
 		}
 
+		//ajax 호출 콜백 함수
 		function updateResult() {
 			if (this.readyState == 4 && this.status == 200) {
-				let xmp = new DOMParser();
-				let xmlDoc = xmp.parseFromString(this.responseText, 'text/xml');
-				// console.log(xmlDoc);
-				let code = xmlDoc.getElementsByTagName('code')[0].innerHTML;
+				let xmlDoc = this.responseXML;
+				console.log(xmlDoc);
+				//<code> 태그 안의 값은 컬렉션 형식이라고 한다. HTMLCollection [code], 0: code <---- 이런 형식... 그래서[0]을 써줌
+				let code = xmlDoc.getElementsByTagName('code')[0].firstChild.nodeValue;
 				//let listDiv = document.getElementById('commentList');
 				if (code == "success") {
-					// let comment = eval(xmlDoc.getElementsByTagName('data').item(0).innerHTML);
-					let comment = JSON.parse(xmlDoc.getElementsByTagName('data').item(0).innerHTML);
-					//listDiv.getElementById("1");
-					updateForm.name.value = '';
-					updateForm.content.value = '';
+					let comment = JSON.parse(xmlDoc.getElementsByTagName('data')[0].firstChild.nodeValue);
+					console.log(comment);
+					let listDiv = document.getElementById("commentList");
+					const commentDiv = makeCommentView(comment);
+					const oldCommentDiv = document.getElementById(comment.id);
+					listDiv.replaceChild(commentDiv, oldCommentDiv);
+					document.getElementById('commentUpdate').style.display = 'none';
 					alert("수정되었습니다. [" + comment.id + "]");
-
-					//새로고침 안하고 수정되게 하기.......................................
-					let name = document.querySelector("div > div > strong").innerText;
-					let content = document.querySelector("div > div > span").innerText;
-					console.log(comment.name);
-					console.log(comment.content);
-					name = comment.name;
-					content = comment.content;
-
 				} else if (code == "error") {
 					alert("에러가 발생했습니다.");
 				}
@@ -208,22 +209,31 @@
 		}
 
 		function confirmDeletion(commentId) {
-			let commentDiv = document.getElementById(commentId);
-
-			//이름 가져오기 연습
-			// let test = document.querySelector("div > div > strong").innerText;
+			console.log('aaaaa');
 
 			let xhttp = new XMLHttpRequest();
 
-			let param = "&id=" + commentId;
-
-			xhttp.open("get", "../CommentsServlet?cmd=delete" + param);
+			xhttp.open("get", "../CommentsServlet?cmd=delete&id=" + commentId);
 			xhttp.send();
+			
+			xhttp.onreadystatechange = deleteResult;
 
-			commentDiv.remove();
-			alert("삭제되었습니다.");
-	
 		}
+
+		function deleteResult() {
+			if (this.readyState == 4 && this.status == 200) {
+				let xmlDoc = this.responseXML;
+				console.log(xmlDoc);
+				const code = xmlDoc.getElementsByTagName('code')[0].firstChild.nodeValue;
+				if (code === 'success') {
+					const comment = JSON.parse(xmlDoc.getElementsByTagName('data')[0].firstChild.nodeValue);
+					const listDiv = document.getElementById('commentList');
+					const oldCommentDiv = document.getElementById(comment.id);
+					listDiv.removeChild(oldCommentDiv);
+					alert("삭제 완료");
+				}
+		}
+	}
 
 
 		function cancelUpdate() {
@@ -246,6 +256,7 @@
 	<!-- 글 수정 -->
 	<div id="commentUpdate" style="display: none">
 		<form action="" name="updateForm">
+			<input type="hidden" name="id" value=''>
 			이름 : <input type="text" name="name" size="10"><br>
 			내용 : <textarea name="content" cols="20" rows="2"></textarea>
 			<input type="button" value="변경" onclick="updateComment()">

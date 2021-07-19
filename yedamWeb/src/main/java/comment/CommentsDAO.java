@@ -23,19 +23,25 @@ public class CommentsDAO extends DAO {
 	}
 
 	//삭제
-	public void delete(String id) {
+	public HashMap<String, Object> delete(Comments comment) {
 		connect();
+		HashMap<String, Object> map = new HashMap<String, Object>();
 		try {
 			conn.setAutoCommit(false);
 			psmt = conn.prepareStatement("delete from comments where id=?");
-			psmt.setString(1, id);
+			psmt.setString(1, comment.getId());
 			psmt.executeUpdate();
 			
 			conn.commit();
 			
+			map.put("id", comment.getId());
+			map.put("code", "success"); 
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			map.put("code", "error");
 		}
+		return map;
 	}
 	
 	// 수정
@@ -60,6 +66,7 @@ public class CommentsDAO extends DAO {
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			map.put("code", "error");
 		} 
 //		finally {
 //			disconnect();

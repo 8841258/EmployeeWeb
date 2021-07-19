@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>comment_jquery.html</title>
+	<script src="../js/jquery-3.6.0.min.js"></script>
+	<script>
+		$(document).ready(() => {
+			loadCommentList()
+		});
+
+		//ajax, servlet 호출
+		function loadCommentList() {
+			$.ajax({
+				url: '../CommentsServlet', //요청할 페이지
+				data: {
+					cmd: 'selectAll'
+				}, //'cmd=selectAll' //파라미터
+				success: loadCommentResult,
+				error: () => {
+					alert('에러 발생')
+				}
+			});
+		}
+
+
+		function loadCommentResult(result) {
+
+			let xmp = new DOMParser();
+			let xmlDoc = xmp.parseFromString(result, 'text/xml');
+			let code = $(xmlDoc).find('code').html();
+			let listDiv = $('#commentList');
+
+			if (code == 'success') {
+				let commentList = eval($(xmlDoc).find('data').html());
+				for (let i = 0; i < commentList.length; i++) {
+					listDiv.append(makeCommentView(commentList[i]));
+				}
+			}
+		}
+
+		//comment는 object이다. {id:1, name:'user', content:'text'}
+		function makeCommentView(comment) {
+			let div = $('<div />'); //document.createElement('div');
+			$(div).attr('id', comment.id); //div.setAttribute('id', comment.id);
+			$(div).addClass('comment'); //div.className = 'comment';
+			$(div).data('obj', comment); //div.comment = comment이 안돼서 이렇게 넣음
+			let str = '<strong>' + comment.name + ' </strong>' + '<span>' + comment.content + '</span>' +
+				'<input type="button" value="수정" onclick="viewUpdateForm(' + comment.id + ');">' +
+				'<input type="button" value="삭제" onclick="confirmDeletion(' + comment.id + ')">';
+			$(div).html(str); //div.innerHTML = str;
+
+			return div;
+		}
+
+		function addComment() {
+			let name = addForm.name.value;
+			if (name == "") {
+				alert("이름을 입력하세요.");
+				addForm.name.focus();
+				return;
+			}
+			let content = addForm.content.value;
+			if (content == "") {
+				alert("내용을 입력하세요.");
+				addForm.content.focus();
+				return;
+			}
+
+			$.ajax({
+				url: "../CommentsServlet",
+				data: {
+					cmd: "insert",
+					name: name,
+					content: content
+				},
+				success: addResult,
+				error: () => {
+					alert('에러 발생')
+				}
+			});
+
+		}
+
+		function addResult(result) {
+			let xmp = new DOMParser();
+			let xmlDoc = xmp.parseFromString(result, 'text/xml');
+			let code = $(xmlDoc).find('code').html();
+			let listDiv = $('#commentList');
+
+			if (code == "success") {
+				let comment = JSON.parse($(xmlDoc).find('data').html());
+				listDiv.append(makeCommentView(comment));
+				addForm.name.value = '';
+				addForm.content.value = '';
+				alert("등록되었습니다. [" + comment.id + "]");
+			} else if (code == "error") {
+				alert("에러가 발생했습니다.");
+			}
+		}
+
+		function viewUpdateForm(commentId) {
+			let commentDiv = $("#" + commentId); //document.getElementById(commentId);
+			let updateFormDiv = $('#commentUpdate');
+
+			$(commentDiv).after(updateFormDiv); //commentDiv.after(updateFormDiv);
+			let comment = $(commentDiv).data('obj'); //commentDiv.comment;
+			updateForm.id.value = comment.id;
+			updateForm.name.value = comment.name;
+			updateForm.content.value = comment.content;
+			$(updateFormDiv).css('display', 'block');
+
+		}
+
+		function updateComment() {
+
+			const id = document.updateForm.id.value;
+			const name = document.updateForm.name.value;
+			const content = document.updateForm.content.value;
+
+			if (name == "") {
+				alert("이름을 입력하세요.");
+				updateForm.name.focus();
+				return;
+			}
+
+			if (content == "") {
+				alert("내용을 입력하세요.");
+				updateForm.content.focus();
+				return;
+			}
+
+			$.ajax({
+				url: "../CommentsServlet",
+				data: {
+					cmd: "update",
+					id: id,
+					name: name,
+					content: content
+				},
+				success: updateResult,
+				error: () => alert("에러 발생")
+			})
+
+		}
+
+		//ajax 호출 콜백 함수
+		function updateResult(result) {
+			let xmp = new DOMParser();
+			// let xmlDoc = xmp.parseFromString(result, 'text/xml');
+			// let code = $(xmlDoc).find('code').html();
+			const xmlDoc = result;
+			const code = xmlDoc.getElementsByTagName('code')[0].firstChild.nodeValue;
+			let listDiv = $('#commentList');
+
+			if (code == "success") {
+				let comment = JSON.parse($(xmlDoc).find('data').html());
+				console.log(xmlDoc);
+				console.log($(xmlDoc));
+				const commentDiv = makeCommentView(comment);
+				const oldCommentDiv = $("#" + comment.id);
+				$(oldCommentDiv).replaceWith(commentDiv); //replaceChild였음
+				$('#commentUpdate').css('display', 'none');
+				alert("수정되었습니다. [" + comment.id + "]");
+			} else if (code == "error") {
+				alert("에러가 발생했습니다.");
+			}
+
+		}
+
+		function confirmDeletion(commentId) {
+
+			$.ajax({
+				url: "../CommentsServlet",
+				data: {
+					cmd: "delete",
+					id: commentId
+				},
+				success: deleteResult,
+				error: () => alert('에러 발생')
+			})
+
+		}
+
+		function deleteResult(result) {
+
+				let xmlDoc = result;
+				const code = xmlDoc.getElementsByTagName('code')[0].firstChild.nodeValue;
+				if (code == 'success') {
+					const comment = JSON.parse($(xmlDoc).find('data').html());
+					const listDiv = $('#commentList');
+					const oldCommentDiv = $("#" + comment.id);
+					$(oldCommentDiv).remove();
+					alert("삭제 완료");
+				}
+
+		}
+
+
+		function cancelUpdate() {
+			let updateFormDiv = document.getElementById('commentUpdate');
+			updateFormDiv.style.display = 'none';
+		}
+	</script>
+</head>
+
+<body>
+	<div id="commentList"></div>
+	<!-- 글 등록 -->
+	<div id="commentAdd"></div>
+	<form action="" name="addForm">
+		이름 : <input type="text" name="name" size="10"><br>
+		내용 : <textarea name="content" cols="20" rows="2"></textarea>
+		<input type="button" value="등록" onclick="addComment()">
+	</form>
+	<!-- 글 수정 -->
+	<div id="commentUpdate" style="display: none">
+		<form action="" name="updateForm">
+			<input type="hidden" name="id" value=''>
+			이름 : <input type="text" name="name" size="10"><br>
+			내용 : <textarea name="content" cols="20" rows="2"></textarea>
+			<input type="button" value="변경" onclick="updateComment()">
+			<input type="button" value="취소" onclick="cancelUpdate()">
+		</form>
+	</div>
+</body>
+
+</html>

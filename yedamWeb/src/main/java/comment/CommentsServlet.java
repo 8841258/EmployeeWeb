@@ -64,15 +64,20 @@ public class CommentsServlet extends HttpServlet {
 			out.println(toXML(map));
 			
 		} else if (cmd.equals("update")) {
+			response.setContentType("text/xml; charset=utf-8");
 			Comments comment = new Comments();
 			comment.setId(request.getParameter("id"));
 			comment.setContent(request.getParameter("content"));
 			comment.setName(request.getParameter("name"));
 			HashMap<String, Object> map = CommentsDAO.getInstance().update(comment);
 			out.println(toXML(map));
+			
 		} else if (cmd.equals("delete")) {
-			String id = request.getParameter("id");
-			CommentsDAO.getInstance().delete(id);
+			response.setContentType("text/xml; charset=utf-8");
+			Comments comment = new Comments();
+			comment.setId(request.getParameter("id"));
+			HashMap<String, Object> map = CommentsDAO.getInstance().delete(comment);
+			out.println(toXML(map));
 		}
 	}
 
