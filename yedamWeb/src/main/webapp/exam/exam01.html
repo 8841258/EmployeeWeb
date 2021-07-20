@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>exam01.html</title>
+</head>
+
+<body>
+    <div class="table"></div>
+    <script>
+        const xhtp = new XMLHttpRequest();
+        xhtp.open("GET", "members.json");
+        xhtp.responseType = 'text';
+        xhtp.send();
+
+        xhtp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                const data = JSON.parse(this.response);
+                console.log(data);
+
+                const tb = document.createElement('table');
+                tb.setAttribute('border', '1');
+
+                const thtr = document.createElement('tr');
+                for (const title in data[0]) {
+                    const th = document.createElement('th');
+                    const text = document.createTextNode(title);
+                    th.appendChild(text);
+                    thtr.appendChild(th);
+                }
+                tb.appendChild(thtr);
+
+                for (const row of data) {
+                    const tr = document.createElement('tr');
+                    for (const field in row) {
+                        const td = document.createElement('td');
+                        const text = document.createTextNode(row[field]);
+                        td.appendChild(text);
+                        tr.appendChild(td);
+                    }
+                    tb.appendChild(tr);
+                }
+                document.querySelector(".table").appendChild(tb);
+            } else {
+                console.log("연결 실패");
+            }
+        }
+    </script>
+</body>
+
+</html>

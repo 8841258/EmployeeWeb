@@ -36,7 +36,7 @@ public class DAO {
 		}
 		if (psmt != null) {
 			try {
-				rs.close();
+				psmt.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -44,7 +44,7 @@ public class DAO {
 		}
 		if (stmt != null) {
 			try {
-				rs.close();
+				stmt.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -52,7 +52,7 @@ public class DAO {
 		}
 		if (conn != null) {
 			try {
-				rs.close();
+				conn.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
